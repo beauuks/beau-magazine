@@ -1,1 +1,1 @@
-# beau-magazine
+just a personal travel blog
