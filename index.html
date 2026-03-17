@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beau Magazine — A Travel & Places Journal</title>
+<meta name="description" content="A personal journal of places, slow travel, and the spaces in between.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ═══ HEADER ═══════════════════════════════════════════ -->
+<header class="site-header" id="siteHeader">
+  <div class="container">
+    <div class="header-top">
+      <div class="header-date">
+        <span class="meta" id="headerDate"></span>
+      </div>
+      <div class="site-title">
+        <a href="#" id="logoLink">Beau Magazine</a>
+        <span class="tagline">A journal of places &amp; slow travel</span>
+      </div>
+      <div class="header-actions">
+        <a href="#">Instagram</a>
+        <a href="#">Subscribe</a>
+      </div>
+    </div>
+  </div>
+  <hr class="rule">
+  <nav class="header-nav">
+    <div class="container">
+      <ul>
+        <li><a href="#" data-filter="all"   id="nav-all"    >All</a></li>
+        <li><a href="#" data-filter="Places" id="nav-Places" >Places</a></li>
+        <li><a href="#" data-filter="Food"   id="nav-Food"   >Food</a></li>
+        <li><a href="#" data-filter="Moments" id="nav-Moments">Moments</a></li>
+        <li><a href="#" data-filter="about"  id="nav-about"  >About</a></li>
+      </ul>
+    </div>
+  </nav>
+</header>
+
+<!-- ═══ HOMEPAGE ═════════════════════════════════════════ -->
+<main id="homepage"></main>
+
+<!-- ═══ ARTICLE OVERLAY ══════════════════════════════════ -->
+<div class="article-overlay" id="articleOverlay">
+  <button class="article-close" id="articleCloseBtn">
+    <span class="article-close-x">✕</span>
+    <span>Return</span>
+  </button>
+  <div id="articleContent"></div>
+</div>
+
+<!-- ═══ FOOTER ═══════════════════════════════════════════ -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <h3>Beau Magazine</h3>
+        <p>A quiet journal of places, people,<br>and the spaces in between.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Explore</h4>
+        <ul>
+          <li><a href="#" data-filter="Places">Places</a></li>
+          <li><a href="#" data-filter="Food">Food</a></li>
+          <li><a href="#" data-filter="Moments">Moments</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Connect</h4>
+        <ul>
+          <li><a href="#">Instagram</a></li>
+          <li><a href="#">Newsletter</a></li>
+          <li><a href="#">About</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© <span id="footerYear"></span> Beau Magazine — A personal travel journal</p>
+      <p class="footer-byline">Made with patience and good coffee</p>
+    </div>
+  </div>
+</footer>
+
+<button class="dark-toggle" id="darkToggle" title="Toggle dark mode">🌙</button>
+
+<!-- ═══ DATA + LOGIC ══════════════════════════════════════ -->
+<script src="articles.js"></script>
+<script>
+// ─── State ─────────────────────────────────────────────────
+let currentFilter = 'all';
+
+// ─── Helpers ───────────────────────────────────────────────
+function esc(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Parse custom body tags into real HTML
+function parseBody(raw) {
+  return raw
+    .replace(/<pullquote>([\s\S]*?)<\/pullquote>/gi,
+      '<blockquote class="pull-quote">$1</blockquote>')
+    .replace(/<fullimage src="([^"]*)"(?:\s+caption="([^"]*)")?>/gi,
+      (_, src, cap) => `<figure class="full-image">
+        <img src="${src}" alt="${cap || ''}">
+        ${cap ? `<figcaption>${cap}</figcaption>` : ''}
+      </figure>`);
+}
+
+// ─── Render homepage ────────────────────────────────────────
+function renderHomepage(filter) {
+  const all = ARTICLES;
+  const featured = all.find(a => a.featured) || all[0];
+  const rest = all.filter(a => a !== featured);
+  const filtered = filter === 'all' ? rest : rest.filter(a => a.category === filter);
+
+  let html = '';
+
+  // ── Hero (only shown when filter = all) ──
+  if (filter === 'all') {
+    html += `
+    <section class="hero">
+      <div class="container">
+        <div class="hero-inner">
+          <div class="hero-text fade-in">
+            <div class="hero-eyebrow"><span class="label">Featured Story</span></div>
+            <h1 class="hero-headline">${esc(featured.title)}</h1>
+            <p class="hero-excerpt">${esc(featured.excerpt)}</p>
+            <div class="hero-meta">
+              <span class="meta">${esc(featured.author)}</span>
+              <span class="sep meta" style="width:3px;height:3px;background:var(--rule);border-radius:50%;display:inline-block;"></span>
+              <span class="meta">${esc(featured.location)}</span>
+              <span class="sep meta" style="width:3px;height:3px;background:var(--rule);border-radius:50%;display:inline-block;"></span>
+              <span class="meta">${esc(featured.readTime)} read</span>
+            </div>
+            <a href="#" class="read-more" data-id="${esc(featured.id)}">Continue reading <span>→</span></a>
+          </div>
+          <div class="hero-image fade-in">
+            <img src="${esc(featured.coverImage)}" alt="${esc(featured.title)}">
+            <span class="hero-image-caption">${esc(featured.coverCaption)}</span>
+          </div>
+        </div>
+      </div>
+    </section>`;
+  }
+
+  // ── Latest Stories grid ──
+  const latestCards = filtered.slice(0, 4);
+  const archiveCards = filtered.slice(4, 8);
+  const foodCards = filtered.filter(a => a.category === 'Food').slice(0, 3);
+
+  html += `
+  <section>
+    <div class="container">
+      <hr class="rule--thick" style="margin-top:${filter === 'all' ? '40px' : '40px'};">
+      <div class="section-header"><h2>${filter === 'all' ? 'Latest Stories' : esc(filter)}</h2></div>
+      <div class="article-grid">`;
+
+  if (filtered.length === 0) {
+    html += `<div class="no-results">No stories here yet — check back soon.</div>`;
+  } else {
+    // Card sizes cycle: large, medium, small, small, then repeat
+    const sizes = ['card--large', 'card--medium', 'card--small', 'card--small'];
+    const imageHeights = [300, 230, 175, 175];
+    filtered.forEach((a, i) => {
+      const sizeClass = sizes[i % sizes.length];
+      const imgH = imageHeights[i % imageHeights.length];
+      const showExcerpt = sizeClass !== 'card--small';
+      html += `
+        <a class="card ${sizeClass}" href="#" data-id="${esc(a.id)}">
+          <div class="card-image" style="height:${imgH}px">
+            <img src="${esc(a.coverImage)}" alt="${esc(a.title)}" loading="lazy">
+          </div>
+          <div class="card-label"><span class="dot"></span><span class="label">${esc(a.category)}</span></div>
+          <h3 class="card-title">${esc(a.title)}</h3>
+          ${showExcerpt ? `<p class="card-excerpt">${esc(a.excerpt)}</p>` : ''}
+          <div class="card-meta meta">${esc(a.location)} · ${esc(a.readTime)} read</div>
+        </a>`;
+    });
+  }
+
+  html += `</div></div></section>`;
+
+  // ── Quote band (all only) ──
+  if (filter === 'all') {
+    html += `
+    <div class="quote-band">
+      <div class="container--narrow">
+        <blockquote>"Travel is not a cure for restlessness, but a gentle reminder of the world's size and your own smallness within it."</blockquote>
+        <cite>— Beau Magazine</cite>
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('homepage').innerHTML = html;
+
+  // Attach card click events
+  document.querySelectorAll('[data-id]').forEach(el => {
+    el.addEventListener('click', e => { e.preventDefault(); openArticle(el.dataset.id); });
+  });
+}
+
+// ─── Open article overlay ────────────────────────────────────
+function openArticle(id) {
+  const a = ARTICLES.find(x => x.id === id);
+  if (!a) return;
+
+  document.getElementById('articleContent').innerHTML = `
+    <div class="article-header">
+      <div class="container--narrow">
+        <span class="label">${esc(a.category)}</span>
+        <h1>${esc(a.title)}</h1>
+        <p class="subtitle">${esc(a.subtitle)}</p>
+        <div class="meta-row">
+          <span class="meta">${esc(a.author)}</span>
+          <span class="sep"></span>
+          <span class="meta">${esc(a.location)}</span>
+          <span class="sep"></span>
+          <span class="meta">${esc(a.date)}</span>
+          <span class="sep"></span>
+          <span class="meta">${esc(a.readTime)} read</span>
+        </div>
+      </div>
+    </div>
+    <img class="article-cover" src="${esc(a.coverImage)}" alt="${esc(a.title)}">
+    <div class="article-cover-caption">${esc(a.coverCaption)}</div>
+    <div class="article-body container--narrow">${parseBody(a.body)}</div>
+  `;
+
+  const overlay = document.getElementById('articleOverlay');
+  overlay.scrollTop = 0;
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  history.pushState({ article: id }, '', `#${id}`);
+}
+
+function closeArticle() {
+  document.getElementById('articleOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  history.pushState({}, '', window.location.pathname);
+}
+
+// ─── Navigation filter ───────────────────────────────────────
+function setFilter(filter) {
+  currentFilter = filter;
+  document.querySelectorAll('.header-nav a').forEach(a => {
+    a.classList.toggle('active', a.dataset.filter === filter);
+  });
+  renderHomepage(filter);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ─── Dark mode ───────────────────────────────────────────────
+// Light is always the default. Dark only activates if you've explicitly toggled it.
+let isDark = localStorage.getItem('beau-dark') === '1';
+function applyDark() {
+  document.body.classList.toggle('dark', isDark);
+  document.getElementById('darkToggle').textContent = isDark ? '☀️' : '🌙';
+}
+function toggleDark() {
+  isDark = !isDark;
+  localStorage.setItem('beau-dark', isDark ? '1' : '0');
+  applyDark();
+}
+
+// ─── Init ────────────────────────────────────────────────────
+(function init() {
+  // Date
+  const d = new Date();
+  document.getElementById('headerDate').textContent =
+    d.toLocaleDateString('en-GB', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  document.getElementById('footerYear').textContent = d.getFullYear();
+
+  // Dark mode
+  applyDark();
+
+  // Render
+  renderHomepage('all');
+  document.getElementById('nav-all').classList.add('active');
+
+  // Check URL hash for direct article link
+  const hash = window.location.hash.slice(1);
+  if (hash && ARTICLES.find(a => a.id === hash)) openArticle(hash);
+
+  // Events
+  document.getElementById('darkToggle').addEventListener('click', toggleDark);
+  document.getElementById('articleCloseBtn').addEventListener('click', closeArticle);
+  document.getElementById('logoLink').addEventListener('click', e => { e.preventDefault(); setFilter('all'); closeArticle(); });
+
+  // Nav links
+  document.querySelectorAll('.header-nav a[data-filter]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      setFilter(a.dataset.filter);
+    });
+  });
+
+  // Footer filter links
+  document.querySelectorAll('.footer-col a[data-filter]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      window.scrollTo(0, 0);
+      setFilter(a.dataset.filter);
+    });
+  });
+
+  // Keyboard
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeArticle(); });
+
+  // Scroll header shadow
+  window.addEventListener('scroll', () => {
+    document.getElementById('siteHeader').classList.toggle('scrolled', window.scrollY > 40);
+  }, { passive: true });
+
+  // Back button
+  window.addEventListener('popstate', e => {
+    if (!e.state?.article) closeArticle();
+  });
+})();
+</script>
+
+</body>
+</html>
